@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
 import requests# A Python library used to make HTTP requests, in this case, to the Google Books API.
-from .models import Notes,Homework
+from .models import Notes,Homework,ToDo
 # Create your views here.
 #1home#######################################################################################################
 def home(request):
@@ -102,7 +102,7 @@ def homework(request):
         description = request.POST.get('description')
         due = request.POST.get('due')
         is_finished = request.POST.get('is_finished', False)
-        
+    
         homework = Homework.objects.create(
             subject=subject,
             title=title,
@@ -119,3 +119,23 @@ def delete_homework(request, homework_id):
     homework = Homework.objects.get(id=homework_id)
     homework.delete()
     return redirect('homework')
+
+
+#5Todo#################################################################################################
+def todo(request):
+    todos = ToDo.objects.all()
+    todos_done = todos.filter(is_finished=True)
+    return render(request, 'todo.html', {'todos': todos, 'todos_done': todos_done})
+
+def create_todo(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        ToDo.objects.create(title=title)
+    return redirect('todo')
+
+def delete_todo(request, todo_id):
+
+    if request.method == 'POST':
+        todo = ToDo.objects.get(id=todo_id)
+        todo.delete()
+    return redirect('todo')
