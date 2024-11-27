@@ -139,3 +139,31 @@ def delete_todo(request, todo_id):
         todo = ToDo.objects.get(id=todo_id)
         todo.delete()
     return redirect('todo')
+
+
+#6disctionary##########################################################################################
+def dictionary_view(request):
+    input_word = None
+    # phonetics = None
+    # definition = None
+    # example = None
+    # audio = None
+
+    # input_word = None
+    word_data = None
+
+    if request.method == 'POST':
+        input_word = request.POST.get('word')
+        if input_word:
+            api_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{input_word}"
+            response = requests.get(api_url)
+            if response.status_code == 200:
+                data = response.json()
+                if data:
+                    word_data = data[0]
+
+    context = {
+        'input': input_word,
+        'word_data': word_data,
+    }
+    return render(request, 'dictionary.html', context)
