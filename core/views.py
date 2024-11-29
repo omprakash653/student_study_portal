@@ -1,6 +1,7 @@
 from django.shortcuts import render,redirect
 import requests# A Python library used to make HTTP requests, in this case, to the Google Books API.
 from .models import Notes,Homework,ToDo
+from youtubesearchpython import VideosSearch
 import wikipedia
 # Create your views here.
 #1home#######################################################################################################
@@ -169,7 +170,7 @@ def dictionary_view(request):
     }
     return render(request, 'dictionary.html', context)
 
-
+#7conversion#############################################################################################
 def conversion(request):
     if request.method == 'POST':
         measurement = request.POST.get('measurement')
@@ -180,11 +181,12 @@ def conversion(request):
             measure2 = request.POST.get('measure2')
             input_value = request.POST.get('input')
             answer = ''
-            if input_value and int(input_value) >= 0:
+
+            if input_value and float(input_value) >= 0:
                 if measure1 == 'yard' and measure2 == 'foot':
-                    answer = f'{input_value} yard = {int(input_value) * 3} foot'
+                    answer = f'{input_value} yard = {float(input_value) * 3} foot'
                 elif measure1 == 'foot' and measure2 == 'yard':
-                    answer = f'{input_value} foot = {int(input_value) / 3} yard'
+                    answer = f'{input_value} foot = {float(input_value) / 3} yard'
             context = {'answer': answer, "input": input, "measurement":measurement}
             return render(request, 'conversion.html', context)
 
@@ -194,16 +196,17 @@ def conversion(request):
             measure2 = request.POST.get('measure2')
             input_value = request.POST.get('input')
             answer = ''
-            if input_value and int(input_value) >= 0:
+            if input_value and float(input_value) >= 0:
                 if measure1 == 'pound' and measure2 == 'kilogram':
-                    answer = f'{input_value} pound = {int(input_value) * 0.453592} kilogram'
+                    answer = f'{input_value} pound = {float(input_value) * 0.453592} kilogram'
                 elif measure1 == 'kilogram' and measure2 == 'pound':
-                    answer = f'{input_value} kilogram = {int(input_value) * 2.20462} pound'
+                    answer = f'{input_value} kilogram = {float(input_value) * 2.20462} pound'
             context = {'answer': answer, "input": input, "measurement":measurement}
             return render(request, 'conversion.html', context)
     else:
         return render(request, 'conversion.html', {'input':False})
-    
+
+#8wikipedia#################################################################################################  
 def wikipedia_view(request):
     if request.method == 'POST':
         text = request.POST.get('search_query')
@@ -220,3 +223,41 @@ def wikipedia_view(request):
         context = {}
     
     return render(request, 'wikipedia.html', context)
+
+
+#####################################################################################
+def youtube_view(request):
+    if request.method == 'POST':
+        text = request.POST.get('text', '')  
+        video = VideosSearch(text, limit=10)
+        result_list = []
+        for i in video.result()['result']:
+            result_dict = {
+                'input': text,
+                'title': i['title'],
+                'duration': i['duration'],
+                'thumbnail': i['thumbnails'][0]['url'],
+                'channel': i['channel']['name'],
+                'link': i['link'],
+                'views': i['viewCount']['short'],
+                'published': i['publishedTime']
+            }
+            desc = ''
+            if 'descriptionSnippet' in i and i['descriptionSnippet']:
+                for j in i['descriptionSnippet']:
+                    desc += j['text']
+            result_dict['description'] = desc
+            result_list.append(result_dict)
+        
+        context = {
+            'results': result_list
+        }
+        return render(request, 'youtube.html', context)
+    else:
+        print('An error')
+        return render(request, 'youtube.html')
+    
+
+#contactus##############################################################
+def contact_us(request):
+    return render(request,'contact.html')
